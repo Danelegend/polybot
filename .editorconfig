@@ -1,0 +1,7 @@
+# .editorconfig
+root = true
+
+[*]
+indent_style = tab
+# Optional: specify the size of the tab
+indent_size = 4 

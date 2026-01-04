@@ -1,52 +1,46 @@
-from pydantic import BaseModel
-from typing import Literal
-from datetime import datetime
+from dataclasses import dataclass
 from decimal import Decimal
 from enum import Enum
-
-from polybot.common.enums import Venue
+from typing import List
+from polybot.common.enums import Side, Venue
+from polybot.common.types import INSTRUMENT_ID
 
 class MarketEventType(Enum):
-    PRICE_CHANGE = "PRICE_CHANGE"
-    TRADE = "TRADE"
-    ORDER_BOOK_SNAPSHOT = "ORDER_BOOK_SNAPSHOT"
+	ORDER_BOOK_SNAPSHOT = "ORDER_BOOK_SNAPSHOT"
+	ORDER_BOOK_UPDATE = "ORDER_BOOK_UPDATE"
+	TRADE = "TRADE"
 
-class MarketEvent(BaseModel):
-    venue: Venue
-    instrument_id: str
-    timestamp: datetime
-    event_type: MarketEventType
+@dataclass(frozen=True)
+class LevelDelta:
+	price: Decimal
+	size_delta: Decimal  # Positive for Add, Negative for Cancel
+	side: Side
 
-class OrderbookLevel(BaseModel):
-    price: Decimal
-    size: Decimal
+@dataclass(frozen=True)
+class Level:
+	price: Decimal
+	size: Decimal
 
-class PriceChangeEvent(BaseModel):
-    event_type: MarketEventType.PRICE_CHANGE
+@dataclass(frozen=True)
+class MarketEvent:
+	venue: Venue
+	instrument_id: INSTRUMENT_ID
+	timestamp: int  # Use Unix ns or ms for faster comparisons than datetime objects
 
-    best_bid: Decimal               # top bid price
-    best_bid_size: Decimal          # quantity available at top bid
-    best_ask: Decimal               # top ask price
-    best_ask_size: Decimal          # quantity available at top ask
-    last_price: Decimal             # last traded price (if available)
-    mid_price: Decimal              # optional, computed as (bid+ask)/2
-    volume: Decimal                 # optional, total traded volume
+@dataclass(frozen=True)
+class OrderBookSnapshotEvent(MarketEvent):
+	bids: List[Level]
+	asks: List[Level]
+	event_type: MarketEventType = MarketEventType.ORDER_BOOK_SNAPSHOT
 
+@dataclass(frozen=True)
+class OrderBookUpdateEvent(MarketEvent):
+	deltas: List[LevelDelta]
+	event_type: MarketEventType = MarketEventType.ORDER_BOOK_UPDATE
 
+@dataclass(frozen=True)
 class TradeEvent(MarketEvent):
-    event_type: MarketEventType.TRADE
-    
-    trade_id: str                   # unique id for the trade
-    side: Literal["BUY", "SELL"]    # aggressor side
-    price: Decimal                  # executed price
-    size: Decimal                   # executed size
-    maker_order_id: str = None      # optional
-    taker_order_id: str = None      # optional
-
-
-class OrderbookSnapshotEvent(MarketEvent):
-    event_type: MarketEventType.ORDER_BOOK_SNAPSHOT
-    
-    bids: list[OrderBookLevel]  # [(price, size), ...] descending
-    asks: list[OrderBookLevel]  # [(price, size), ...] ascending
-
+	price: Decimal
+	size: Decimal
+	side: Side  # The side of the Taker
+	event_type: MarketEventType = MarketEventType.TRADE

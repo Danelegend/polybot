@@ -1,20 +1,24 @@
 from typing import Protocol
 
-class ChannelInterface(Protocol):
-    def run(self):
-        """
-        Starts the channel
-        """
-        ...
-    
-    def stop(self):
-        """
-        Stops the channel
-        """
-        ...
+from polybot.strategy import StrategyBase
 
-    def run_strategies(self, instrument_id: str):
-        """
-        Runs the strategies for the given instrument
-        """
-        ...
+class ChannelInterface(Protocol):
+	def run(self):
+		"""
+		Starts the channel
+		"""
+		...
+	
+	def stop(self):
+		"""
+		Stops the channel
+		"""
+		...
+
+	def add_strategy(self, strategy: StrategyBase):
+		"""
+		Adds a strategy to the channel
+		"""
+		...
+
+	
