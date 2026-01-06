@@ -31,7 +31,7 @@ Example:
 	)
 """
 
-from typing import Type
+from typing import Optional, Type
 
 from .base_strategy import Strategy
 from .types import InstrumentLimit
@@ -47,6 +47,7 @@ def register_strategy(
 	instrument_ids: list[str],
 	limits: list[InstrumentLimit],
 	name: str = "",
+	registry: Optional[StrategyRegistry] = None,
 ) -> RegistrationEntry:
 	"""
 	Register a strategy class with the core trading system.
@@ -60,6 +61,8 @@ def register_strategy(
 		instrument_ids: List of instrument IDs this strategy will trade.
 		limits: List of position limits for each instrument.
 		name: Optional name for this strategy. Defaults to the class name.
+		registry: Optional registry instance. Defaults to the global singleton.
+			Use a custom registry for testing to isolate strategy registrations.
 	
 	Returns:
 		The RegistrationEntry that was created and registered.
@@ -70,11 +73,22 @@ def register_strategy(
 		ValueError: If limits don't cover all instrument_ids.
 	
 	Example:
+		# Production - uses global registry
 		register_strategy(
 			strat_class=MyStrategy,
 			instrument_ids=["0x1234..."],
 			limits=[InstrumentLimit(...)],
 			name="my_strategy",
+		)
+		
+		# Testing - uses isolated registry
+		test_registry = StrategyRegistry()
+		register_strategy(
+			strat_class=MyStrategy,
+			instrument_ids=["0x1234..."],
+			limits=[InstrumentLimit(...)],
+			name="my_strategy",
+			registry=test_registry,
 		)
 	"""
 	# Validate inputs
@@ -110,9 +124,9 @@ def register_strategy(
 		limits=core_limits,
 	)
 	
-	# Register with the global registry in the core
-	registry = StrategyRegistry.get_instance()
-	registry.register(entry)
+	# Register with the provided registry or the global singleton
+	target_registry = registry or StrategyRegistry.get_instance()
+	target_registry.register(entry)
 	
 	return entry
 
