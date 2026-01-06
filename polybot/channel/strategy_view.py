@@ -1,8 +1,8 @@
 from polybot.common.orderbook import OrderBook
 from polybot.common.types import INSTRUMENT_ID
 from polybot.strategy import StrategyBase, StrategyInterface, TradeData
-from polybot.common.types import Order
-from polybot.common.strategy_context import StrategyContext
+from polybot.common.types import OrderRequest
+from polybot.common.context_provider import ContextProvider
 
 class StrategyView(StrategyInterface):
     def __init__(self, strategy: StrategyBase):
@@ -27,7 +27,7 @@ class StrategyView(StrategyInterface):
         """The strategy can grab a specific book by ID."""
         return self._books_map[instrument_id]
 
-    def on_trade(self, instrument_id: INSTRUMENT_ID, trade_data: TradeData, orderbook: OrderBook, context: StrategyContext) -> list[Order]:
+    def on_trade(self, instrument_id: INSTRUMENT_ID, trade_data: TradeData, orderbook: OrderBook, context: ContextProvider) -> list[OrderRequest]:
         return self._strategy.on_trade(
             instrument_id, 
             trade_data, 
@@ -35,7 +35,7 @@ class StrategyView(StrategyInterface):
             self._to_strategy_context(context)
         )
 
-    def on_order_book_change(self, instrument_id: INSTRUMENT_ID, orderbook: OrderBook, context: StrategyContext) -> list[Order]:
+    def on_order_book_change(self, instrument_id: INSTRUMENT_ID, orderbook: OrderBook, context: ContextProvider) -> list[OrderRequest]:
         return self._strategy.on_order_book_change(
             instrument_id, 
             orderbook,
@@ -43,8 +43,6 @@ class StrategyView(StrategyInterface):
         )
 
 
-    def _to_strategy_context(self, context: StrategyContext) -> StrategyContext:
-        return StrategyContext(
-            position_reader=context.position_reader,
-            orderbooks=self._books_map,
-        )
+    def _to_strategy_context(self, context: ContextProvider) -> ContextProvider:
+        context.orderbooks = self._books_map
+        return context

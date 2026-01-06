@@ -1,7 +1,7 @@
 from polybot.strategy import StrategyBase, TradeData as CoreTradeData
-from polybot.common.types import Order as CoreOrder, INSTRUMENT_ID
+from polybot.common.types import OrderRequest as CoreOrder, INSTRUMENT_ID
 from polybot.common.orderbook import OrderBook
-from polybot.common.strategy_context import StrategyContext
+from polybot.common.context_provider import ContextProvider
 from polybot.common.enums import OrderType
 
 from sdk.base_strategy import Strategy
@@ -21,7 +21,7 @@ class StrategyWrapper(StrategyBase):
 		instrument_id: INSTRUMENT_ID,
 		trade_data: CoreTradeData,
 		orderbook: OrderBook,
-		context: StrategyContext,
+		context: ContextProvider,
 	) -> list[CoreOrder]:
 		# Convert core trade data to SDK trade data
 		sdk_trade = SDKTradeData(
@@ -40,7 +40,7 @@ class StrategyWrapper(StrategyBase):
 		self,
 		instrument_id: INSTRUMENT_ID,
 		orderbook: OrderBook,
-		context: StrategyContext,
+		context: ContextProvider,
 	) -> list[CoreOrder]:
 		return [
 			_convert_sdk_order_to_core_order(order)

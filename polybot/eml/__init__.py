@@ -1,7 +1,8 @@
-from .eml_base import EmlBase
-from .interface import ExecLink
+from .eml_base import ExecutionLink
+from .interface import ExecLink, IGenericExchangeLink
 
 __all__ = [
-	"EmlBase",
+	"ExecutionLink",
 	"ExecLink",
+	"IGenericExchangeLink",
 ]

@@ -6,12 +6,12 @@ from dataclasses import dataclass
 
 from polybot.common.enums import Side
 from polybot.common.orderbook import OrderBook
-from polybot.common.strategy_context import StrategyContext
+from polybot.common.context_provider import ContextProvider
 
 from .metadata import StrategyMetaData
 from .config import StrategyConfig
 
-from polybot.common.types import INSTRUMENT_ID, Order
+from polybot.common.types import INSTRUMENT_ID, OrderRequest
 
 @dataclass(frozen=True)
 class TradeData:
@@ -29,8 +29,8 @@ class StrategyInterface(Protocol):
 		instrument_id: INSTRUMENT_ID,
 		trade_data: TradeData,
 		orderbook: OrderBook,
-		context: StrategyContext,
-	) -> list[Order]:
+		context: ContextProvider,
+	) -> list[OrderRequest]:
 		"""
 		Called when a trade event occurs
 		"""
@@ -40,8 +40,8 @@ class StrategyInterface(Protocol):
 		self,
 		instrument_id: INSTRUMENT_ID,
 		orderbook: OrderBook,
-		context: StrategyContext,
-	) -> list[Order]:
+		context: ContextProvider,
+	) -> list[OrderRequest]:
 		"""
 		Called when the order book changes but a trade does not occur
 
@@ -79,8 +79,8 @@ class StrategyBase(ABC, StrategyInterface):
 		instrument_id: INSTRUMENT_ID,
 		trade_data: TradeData,
 		orderbook: OrderBook,
-		context: StrategyContext,
-	) -> list[Order]:
+		context: ContextProvider,
+	) -> list[OrderRequest]:
 		...
 
 	@abstractmethod
@@ -88,7 +88,7 @@ class StrategyBase(ABC, StrategyInterface):
 		self,
 		instrument_id: INSTRUMENT_ID,
 		orderbook: OrderBook,
-		context: StrategyContext,
-	) -> list[Order]:
+		context: ContextProvider,
+	) -> list[OrderRequest]:
 		...
 
